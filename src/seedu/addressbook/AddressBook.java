@@ -454,11 +454,13 @@ public class AddressBook {
      */
     private static String executeFindPersons(String commandArgs) {
         ArrayList<String[]> personsFound = new ArrayList<>();
+
         if(commandArgs.length() > 0) {
             String formatCommandArgs = capitalizeFirstCharForEveryWord(commandArgs);
             Set<String> keywords = extractKeywordsFromFindPersonArgs(formatCommandArgs);
             personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
         }
+
         showToUser(personsFound);
         return getMessageForPersonsDisplayedSummary(personsFound);
     }
@@ -491,12 +493,14 @@ public class AddressBook {
      */
     private static ArrayList<String[]> getPersonsWithNameContainingAnyKeyword(Collection<String> keywords) {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
+
         for (String[] person : getAllPersonsInAddressBook()) {
             final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
         }
+
         return matchedPersons;
     }
 
@@ -510,14 +514,17 @@ public class AddressBook {
         if (!isDeletePersonArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_DELETE_WORD, getUsageInfoForDeleteCommand());
         }
+
         final int targetVisibleIndex = extractTargetIndexFromDeletePersonArgs(commandArgs);
         if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
             return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
         }
+
         final String[] targetInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
         if (hasDeletedPersonFromAddressBook(targetInModel)) {
             return getMessageForSuccessfulDelete(targetInModel);
         }
+
         return MESSAGE_PERSON_NOT_IN_ADDRESS_BOOK;
     }
 
@@ -610,10 +617,12 @@ public class AddressBook {
     private static String getUserInput() {
         System.out.print(LINE_PREFIX + "Enter command: ");
         String inputLine = SCANNER.nextLine();
+
         // silently consume all blank and comment lines
         while (inputLine.trim().isEmpty() || inputLine.trim().charAt(0) == INPUT_COMMENT_MARKER) {
             inputLine = SCANNER.nextLine();
         }
+
         return inputLine;
     }
 
@@ -649,6 +658,7 @@ public class AddressBook {
      */
     private static String getDisplayString(ArrayList<String[]> persons) {
         final StringBuilder messageAccumulator = new StringBuilder();
+
         for (int i = 0; i < persons.size(); i++) {
             final String[] person = persons.get(i);
             final int displayIndex = i + DISPLAYED_INDEX_OFFSET;
@@ -656,6 +666,7 @@ public class AddressBook {
                               .append(getIndexedPersonListElementMessage(displayIndex, person))
                               .append(LS);
         }
+
         return messageAccumulator.toString();
     }
 
@@ -929,11 +940,13 @@ public class AddressBook {
         if (!isPersonDataExtractableFrom(encoded)) {
             return Optional.empty();
         }
+
         final String[] decodedPerson = makePersonFromData(
                 extractNameFromPersonString(encoded),
                 extractPhoneFromPersonString(encoded),
                 extractEmailFromPersonString(encoded)
         );
+
         // check that the constructed person is valid
         if (isPersonDataValid(decodedPerson)) {
             return Optional.of(decodedPerson);
@@ -950,6 +963,7 @@ public class AddressBook {
      */
     private static Optional<ArrayList<String[]>> decodePersonsFromStrings(ArrayList<String> encodedPersons) {
         final ArrayList<String[]> decodedPersons = new ArrayList<>();
+
         for (String encodedPerson : encodedPersons) {
             final Optional<String[]> decodedPerson = decodePersonFromString(encodedPerson);
             if (!decodedPerson.isPresent()) {
@@ -957,6 +971,7 @@ public class AddressBook {
             }
             decodedPersons.add(decodedPerson.get());
         }
+
         return Optional.of(decodedPersons);
     }
 
@@ -984,13 +999,16 @@ public class AddressBook {
     private static String extractNameFromPersonString(String encoded) {
         final int indexOfPhonePrefix = encoded.indexOf(PERSON_DATA_PREFIX_PHONE);
         final int indexOfEmailPrefix = encoded.indexOf(PERSON_DATA_PREFIX_EMAIL);
+
         // name is leading substring up to first data prefix symbol
         int indexOfFirstPrefix = Math.min(indexOfEmailPrefix, indexOfPhonePrefix);
+
         String nameOfPerson = "";
         if(indexOfFirstPrefix != 0) {
             nameOfPerson = capitalizeFirstCharForEveryWord(encoded.substring(0, indexOfFirstPrefix).trim());
         }
-            return nameOfPerson;
+
+        return nameOfPerson;
     }
 
     /**
