@@ -936,7 +936,6 @@ public class AddressBook {
      *         else: Optional containing decoded person
      */
     private static Optional<String[]> decodePersonFromString(String encoded) {
-        // check that we can extract the parts of a person from the encoded string
         if (!isPersonDataExtractableFrom(encoded)) {
             return Optional.empty();
         }
@@ -947,7 +946,6 @@ public class AddressBook {
                 extractEmailFromPersonString(encoded)
         );
 
-        // check that the constructed person is valid
         if (isPersonDataValid(decodedPerson)) {
             return Optional.of(decodedPerson);
         }
@@ -985,7 +983,7 @@ public class AddressBook {
         final String matchAnyPersonDataPrefix = PERSON_DATA_PREFIX_PHONE + '|' + PERSON_DATA_PREFIX_EMAIL;
         final String[] splitArgs = personData.trim().split(matchAnyPersonDataPrefix);
         return splitArgs.length == 3 // 3 arguments
-                && !splitArgs[0].isEmpty() // non-empty arguments
+                && !splitArgs[0].isEmpty()
                 && !splitArgs[1].isEmpty()
                 && !splitArgs[2].isEmpty();
     }
