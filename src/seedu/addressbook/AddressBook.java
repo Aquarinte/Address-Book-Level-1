@@ -395,7 +395,10 @@ public class AddressBook {
      */
     private static String[] splitCommandWordAndArgs(String rawUserInput) {
         final String[] split =  rawUserInput.trim().split("\\s+", 2);
-        return split.length == 2 ? split : new String[] { split[0] , "" }; // else case: no parameters
+        if(split.length == 2){
+            return split;
+        }
+        return new String[] { split[0] , "" };
     }
 
     /**
@@ -512,8 +515,10 @@ public class AddressBook {
             return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
         }
         final String[] targetInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
-        return hasDeletedPersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
-                                                          : MESSAGE_PERSON_NOT_IN_ADDRESS_BOOK; // not found
+        if (hasDeletedPersonFromAddressBook(targetInModel)) {
+            return getMessageForSuccessfulDelete(targetInModel);
+        }
+        return MESSAGE_PERSON_NOT_IN_ADDRESS_BOOK;
     }
 
     /**
@@ -930,7 +935,10 @@ public class AddressBook {
                 extractEmailFromPersonString(encoded)
         );
         // check that the constructed person is valid
-        return isPersonDataValid(decodedPerson) ? Optional.of(decodedPerson) : Optional.empty();
+        if (isPersonDataValid(decodedPerson)) {
+            return Optional.of(decodedPerson);
+        }
+        return Optional.empty();
     }
 
     /**
