@@ -266,7 +266,7 @@ public class AddressBook {
             setupGivenFileForStorage(args[0]);
         }
 
-        if(args.length == 0) {
+        if (args.length == 0) {
             setupDefaultFileForStorage();
         }
     }
@@ -1003,7 +1003,7 @@ public class AddressBook {
     private static String capitalizeFirstCharForEveryWord(String encoded) {
         ArrayList<String> partOfName = splitByWhitespace(encoded);
         String formattedName = "";
-        for(String word : partOfName){
+        for (String word : partOfName) {
             formattedName += word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase() + " ";
         }
         return formattedName.trim();
