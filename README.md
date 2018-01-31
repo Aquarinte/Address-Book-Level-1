@@ -68,6 +68,7 @@ Format: `help`
 Format: `add NAME p/PHONE_NUMBER e/EMAIL`  
 > Words in `UPPER_CASE` are the parameters<br>
   Phone number and email can be in any order but the name must come first.
+  First character of each word in the name is automatically capitalized and the rest in lower-case.
 
 Examples: 
 * `add John Doe p/98765432 e/johnd@gmail.com`
@@ -84,7 +85,7 @@ Format: `list`
 > Finds persons that match given keywords
 
 Format: `find KEYWORD [MORE_KEYWORDS]`  
-> The search is case sensitive, the order of the keywords does not matter, only the name is searched, 
+> The search is case INsensitive, the order of the keywords does not matter, only the name is searched, 
 and persons matching at least one keyword will be returned (i.e. `OR` search).
 
 Examples: 

@@ -425,6 +425,7 @@ public class AddressBook {
         }
 
         // add the person as specified
+
         final String[] personToAdd = decodeResult.get();
         addPersonToAddressBook(personToAdd);
         return getMessageForSuccessfulAddPerson(personToAdd);
@@ -450,8 +451,12 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeFindPersons(String commandArgs) {
-        final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs);
-        final ArrayList<String[]> personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
+        ArrayList<String[]> personsFound = new ArrayList<>();
+        if(commandArgs.length() > 0) {
+            String formatCommandArgs = capitalizeFirstCharForEveryWord(commandArgs);
+            Set<String> keywords = extractKeywordsFromFindPersonArgs(formatCommandArgs);
+            personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
+        }
         showToUser(personsFound);
         return getMessageForPersonsDisplayedSummary(personsFound);
     }
@@ -974,7 +979,27 @@ public class AddressBook {
         final int indexOfEmailPrefix = encoded.indexOf(PERSON_DATA_PREFIX_EMAIL);
         // name is leading substring up to first data prefix symbol
         int indexOfFirstPrefix = Math.min(indexOfEmailPrefix, indexOfPhonePrefix);
-        return encoded.substring(0, indexOfFirstPrefix).trim();
+        String fullName = "";
+        if(indexOfFirstPrefix != 0) {
+            fullName = capitalizeFirstCharForEveryWord(encoded.substring(0, indexOfFirstPrefix).trim()).trim();
+        }
+            return fullName;
+    }
+
+    /**
+     * Format name before adding into address book
+     * (Capitalize first character of every word in name & the rest in lower case)
+     *
+     * @param encoded name argument
+     * @return formatted name argument
+     */
+    private static String capitalizeFirstCharForEveryWord(String encoded) {
+        ArrayList<String> partOfName = splitByWhitespace(encoded);
+        String fullName = "";
+        for(String word : partOfName){
+            fullName += word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase() + " ";
+        }
+        return fullName;
     }
 
     /**
