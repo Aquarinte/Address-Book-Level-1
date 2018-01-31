@@ -208,7 +208,7 @@ public class AddressBook {
 
     public static void main(String[] args) {
         showWelcomeMessage();
-        processProgramArgs(args);
+        checkForValidProgramArgs(args);
         loadDataFromStorage();
         while (true) {
             String userCommand = getUserInput();
@@ -256,7 +256,7 @@ public class AddressBook {
      *
      * @param args full program arguments passed to application main method
      */
-    private static void processProgramArgs(String[] args) {
+    private static void checkForValidProgramArgs(String[] args) {
         if (args.length >= 2) {
             showToUser(MESSAGE_INVALID_PROGRAM_ARGS);
             exitProgram();
@@ -425,7 +425,6 @@ public class AddressBook {
         }
 
         // add the person as specified
-
         final String[] personToAdd = decodeResult.get();
         addPersonToAddressBook(personToAdd);
         return getMessageForSuccessfulAddPerson(personToAdd);
@@ -579,9 +578,9 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeListAllPersonsInAddressBook() {
-        ArrayList<String[]> toBeDisplayed = getAllPersonsInAddressBook();
-        showToUser(toBeDisplayed);
-        return getMessageForPersonsDisplayedSummary(toBeDisplayed);
+        ArrayList<String[]> allEntriesInAddressBook = getAllPersonsInAddressBook();
+        showToUser(allEntriesInAddressBook);
+        return getMessageForPersonsDisplayedSummary(allEntriesInAddressBook);
     }
 
     /**
@@ -979,11 +978,11 @@ public class AddressBook {
         final int indexOfEmailPrefix = encoded.indexOf(PERSON_DATA_PREFIX_EMAIL);
         // name is leading substring up to first data prefix symbol
         int indexOfFirstPrefix = Math.min(indexOfEmailPrefix, indexOfPhonePrefix);
-        String fullName = "";
+        String nameOfPerson = "";
         if(indexOfFirstPrefix != 0) {
-            fullName = capitalizeFirstCharForEveryWord(encoded.substring(0, indexOfFirstPrefix).trim()).trim();
+            nameOfPerson = capitalizeFirstCharForEveryWord(encoded.substring(0, indexOfFirstPrefix).trim());
         }
-            return fullName;
+            return nameOfPerson;
     }
 
     /**
@@ -995,11 +994,11 @@ public class AddressBook {
      */
     private static String capitalizeFirstCharForEveryWord(String encoded) {
         ArrayList<String> partOfName = splitByWhitespace(encoded);
-        String fullName = "";
+        String formattedName = "";
         for(String word : partOfName){
-            fullName += word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase() + " ";
+            formattedName += word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase() + " ";
         }
-        return fullName;
+        return formattedName.trim();
     }
 
     /**
