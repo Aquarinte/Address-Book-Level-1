@@ -177,14 +177,14 @@ public class AddressBook {
      * List of all persons in the address book.
      */
     private enum PersonProperty { NAME, PHONE, EMAIL};
-    private static final HashMap<String, HashMap<PersonProperty, String>> ALL_PERSONS = new HashMap<>();
+    private static final LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> ALL_PERSONS = new LinkedHashMap<>();
 
     /**
      * Stores the most recent list of persons shown to the user as a result of a user command.
      * This is a subset of the full list. Deleting persons in the pull list does not delete
      * those persons from this list.
      */
-    private static HashMap<String, HashMap<PersonProperty,String>> latestPersonListingView = getAllPersonsInAddressBook(); // initial view is of all
+    private static LinkedHashMap<String, LinkedHashMap<PersonProperty,String>> latestPersonListingView = getAllPersonsInAddressBook(); // initial view is of all
 
     /**
      * The path to the file used for storing person data.
@@ -455,24 +455,28 @@ public class AddressBook {
      */
     private static String executeFindPersons(String commandArgs) {
         ArrayList<String> personsFound = new ArrayList<>();
-        HashMap<String, HashMap<PersonProperty, String>> findResults = new HashMap<>();
-        String listAsString = "";
+        LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> findResults = new LinkedHashMap<>();
         if(commandArgs.length() > 0) {
             String formatCommandArgs = capitalizeFirstCharForEveryWord(commandArgs);
             Set<String> keywords = extractKeywordsFromFindPersonArgs(formatCommandArgs);
             personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
         }
+        String listAsString = getPersonDisplayString(personsFound, findResults);
+        showToUser(listAsString);
+        return getMessageForPersonsDisplayedSummary(findResults);
+    }
+
+    private static String getPersonDisplayString(ArrayList<String> personsFound, LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> findResults) {
         int count = 1;
+        final StringBuilder messageAccumulator = new StringBuilder();
         for(String name : personsFound){
             if( !ALL_PERSONS.get(name).equals("") ){
                 findResults.put(name, ALL_PERSONS.get(name));
             }
-            listAsString += " " + count + ". "+name + "  Phone Number: " + ALL_PERSONS.get(name).get(PersonProperty.PHONE)
-                    + "  Email: " + ALL_PERSONS.get(name).get(PersonProperty.EMAIL) + "\n";
+            messageAccumulator.append('\t').append(getIndexedPersonListElementMessage(count, name)).append(LS);
             count++;
         }
-        showToUser(listAsString);
-        return getMessageForPersonsDisplayedSummary(findResults);
+        return messageAccumulator.toString();
     }
 
     /**
@@ -481,7 +485,7 @@ public class AddressBook {
      * @param personsDisplayed used to generate summary
      * @return summary message for persons displayed
      */
-    private static String getMessageForPersonsDisplayedSummary(HashMap<String, HashMap<PersonProperty, String>> personsDisplayed) {
+    private static String getMessageForPersonsDisplayedSummary(LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> personsDisplayed) {
         return String.format(MESSAGE_PERSONS_FOUND_OVERVIEW, personsDisplayed.size());
     }
 
@@ -603,7 +607,7 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeListAllPersonsInAddressBook() {
-        HashMap<String, HashMap<PersonProperty, String>> allEntriesInAddressBook = getAllPersonsInAddressBook();
+        LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> allEntriesInAddressBook = getAllPersonsInAddressBook();
         showToUser(allEntriesInAddressBook);
         return getMessageForPersonsDisplayedSummary(allEntriesInAddressBook);
     }
@@ -660,36 +664,16 @@ public class AddressBook {
      * The list will be indexed, starting from 1.
      *
      */
-    private static void showToUser(HashMap<String, HashMap<PersonProperty, String>> persons) {
-        //String listAsString = getDisplayString(persons);
-        String listAsString = "";
+    private static void showToUser(LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> persons) {
+        final StringBuilder messageAccumulator = new StringBuilder();
         int count = 1;
         for(String name : persons.keySet()){
-            HashMap<PersonProperty, String> values = persons.get(name);
-            listAsString += " " +count + ". " + values.get(PersonProperty.NAME) + "  Phone Number: " + values.get(PersonProperty.PHONE)
-                    + "  Email: " + values.get(PersonProperty.EMAIL) + "\n";
+            messageAccumulator.append('\t').append(getIndexedPersonListElementMessage(count, name)).append(LS);
             count++;
         }
-        showToUser(listAsString);
+        showToUser(messageAccumulator.toString());
         updateLatestViewedPersonListing(persons);
     }
-
-    /**
-     * Returns the display string representation of the list of persons.
-     */
-    /*private static String getDisplayString(ArrayList<String[]> persons) {
-        final StringBuilder messageAccumulator = new StringBuilder();
-
-        for (int i = 0; i < persons.size(); i++) {
-            final String[] person = persons.get(i);
-            final int displayIndex = i + DISPLAYED_INDEX_OFFSET;
-            messageAccumulator.append('\t')
-                              .append(getIndexedPersonListElementMessage(displayIndex, person))
-                              .append(LS);
-        }
-
-        return messageAccumulator.toString();
-    }*/
 
     /**
      * Constructs a prettified listing element message to represent a person and their data.
@@ -709,13 +693,9 @@ public class AddressBook {
      * @return formatted message showing internal state
      */
     private static String getMessageForFormattedPersonData(String person) {
-        HashMap<PersonProperty, String> found = ALL_PERSONS.get(person);
-        String details = "";
-        for(PersonProperty p : found.keySet()){
-            details += found.get(PersonProperty.NAME) + "\t" + found.get(PersonProperty.PHONE)
-                    + "\t" + found.get(PersonProperty.EMAIL) + "\n";
-        }
-        return String.format(MESSAGE_DISPLAY_PERSON_DATA, details.trim());
+        LinkedHashMap<PersonProperty, String> found = ALL_PERSONS.get(person);
+        return String.format(MESSAGE_DISPLAY_PERSON_DATA, found.get(PersonProperty.NAME),
+                found.get(PersonProperty.PHONE), found.get(PersonProperty.EMAIL));
     }
 
     /**
@@ -723,9 +703,9 @@ public class AddressBook {
      *
      * @param newListing the new listing of persons
      */
-    private static void updateLatestViewedPersonListing(HashMap<String, HashMap<PersonProperty, String>> newListing) {
+    private static void updateLatestViewedPersonListing(LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> newListing) {
         // clone to insulate from future changes to arg list
-        latestPersonListingView = new HashMap<String, HashMap<PersonProperty, String>>(newListing);
+        latestPersonListingView = new LinkedHashMap<String, LinkedHashMap<PersonProperty, String>>(newListing);
     }
 
     /**
@@ -806,7 +786,7 @@ public class AddressBook {
      *
      * @param filePath file for saving
      */
-    private static void savePersonsToFile(HashMap<String, HashMap<PersonProperty, String>> persons, String filePath) {
+    private static void savePersonsToFile(LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> persons, String filePath) {
         final ArrayList<String> linesToWrite = encodePersonsToStrings(persons);
         try {
             Files.write(Paths.get(storageFilePath), linesToWrite);
@@ -829,7 +809,7 @@ public class AddressBook {
      * @param person to add
      */
     private static void addPersonToAddressBook(String name, String phone, String email) {
-        HashMap<PersonProperty, String> newPerson = new HashMap<>();
+        LinkedHashMap<PersonProperty, String> newPerson = new LinkedHashMap<>();
         newPerson.put(PersonProperty.NAME, name);
         newPerson.put(PersonProperty.PHONE, phone);
         newPerson.put(PersonProperty.EMAIL, email);
@@ -854,7 +834,7 @@ public class AddressBook {
     /**
      * Returns all persons in the address book
      */
-    private static HashMap<String, HashMap<PersonProperty, String>> getAllPersonsInAddressBook() {
+    private static LinkedHashMap<String, LinkedHashMap<PersonProperty, String>> getAllPersonsInAddressBook() {
         return ALL_PERSONS;
     }
 
@@ -874,7 +854,7 @@ public class AddressBook {
     private static void initialiseAddressBookModel(ArrayList<String[]> persons) {
         ALL_PERSONS.clear();
         for(String[] p : persons){
-            HashMap<PersonProperty, String> list = new HashMap<>();
+            LinkedHashMap<PersonProperty, String> list = new LinkedHashMap<>();
             list.put(PersonProperty.NAME, p[0]);
             list.put(PersonProperty.PHONE, p[1]);
             list.put(PersonProperty.EMAIL, p[2]);
@@ -949,12 +929,11 @@ public class AddressBook {
      * @param persons to be encoded
      * @return encoded strings
      */
-    private static ArrayList<String> encodePersonsToStrings(HashMap<String, HashMap<PersonProperty,String>> persons) {
+    private static ArrayList<String> encodePersonsToStrings(LinkedHashMap<String, LinkedHashMap<PersonProperty,String>> persons) {
         final ArrayList<String> encoded = new ArrayList<>();
         for (String key : persons.keySet()) {
-            //encoded.add(encodePersonToString(p));
-            HashMap<PersonProperty, String> each =persons.get(key);
-            encoded.add(each.get(PersonProperty.NAME) + " " + each.get(PersonProperty.PHONE) + " " + each.get(PersonProperty.EMAIL));
+            LinkedHashMap<PersonProperty, String> each = persons.get(key);
+            encoded.add(each.get(PersonProperty.NAME) + " p/" + each.get(PersonProperty.PHONE) + " e/" + each.get(PersonProperty.EMAIL));
         }
         return encoded;
     }
